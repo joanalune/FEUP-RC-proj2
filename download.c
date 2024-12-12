@@ -360,12 +360,13 @@ int passive_mode(char *ip, int *port){
 int get_file(char* path, char* file_name) {
 
     char retr_cmd[5+strlen(path)+3];
-    sprintf(retr_cmd, "retr /%s\r\n", path);
-    printf("%s\n%ld", retr_cmd, strlen(retr_cmd));
+    sprintf(retr_cmd, "retr %s\r\n", path);
+    printf("%s\n%ld\n", retr_cmd, strlen(retr_cmd));
 
     write(socket1, retr_cmd, strlen(retr_cmd));
 
     char reply[REPLY_LENGTH];
+    memset(reply,0,REPLY_LENGTH);
 
     int reply_code = read_from_server(reply);
 
