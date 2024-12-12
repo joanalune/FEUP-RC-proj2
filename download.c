@@ -32,8 +32,17 @@ int main(int argc, char *argv[]){
     }
 
     int code = read_from_server(reply);
-
     printf("Code: %d\n%s", code, reply);
+
+    if(code != AUTH_READY){
+        printf("Not ready for authentication!\n");
+        exit(-1);
+    }
+
+    if(authentication(url_info.username,url_info.password) != LOGIN_OK){
+        printf("Authentication for user: %s and passowrd: %s failed\n",url_info.username,url_info.password);
+        exit(-1);
+    }
 
 
     return 0;
@@ -166,6 +175,8 @@ int parse_url(char* url_str, url_info* url_info){
 
     }
 
+    free(original_url);
+
     return 0;   
 }
 
@@ -262,8 +273,36 @@ int read_from_server(char* buf) {
         }
     }
     
-
     sscanf(code_str, "%d", &code);
+    return code;
+
+}
+
+
+int authentication(char* username, char* password){
+
+    char user_cmd[7+strlen(username)];
+    sprintf(user_cmd, "USER %s\r\n", username);
+
+    char reply[REPLY_LENGTH];
+
+    write(socket1,user_cmd,strlen(user_cmd));
+
+    int code = read_from_server(reply);
+
+    if(code != USERNAME_OK){
+        printf("Error processing user command!\n");
+        exit(-1);
+    }
+
+    char pass_cmd[7+strlen(password)];
+    sprintf(pass_cmd, "PASS %s\r\n", password);
+
+    write(socket1,pass_cmd,strlen(pass_cmd));
+
+
+    code = read_from_server(reply);
+
     return code;
 
 }
