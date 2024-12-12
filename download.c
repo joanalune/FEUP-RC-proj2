@@ -54,7 +54,15 @@ int main(int argc, char *argv[]){
 
     socket2 = socket_connection(ip, port);
 
-    
+    if (get_file(url_info.url_path, url_info.filename)) {
+        printf("Error getting file\n");
+        exit(-1);
+    }
+
+
+    if (close_connections()) {
+        exit(-1);
+    }
 
 
     return 0;
@@ -347,6 +355,85 @@ int passive_mode(char *ip, int *port){
     }
 
     return 0;
+}
+
+int get_file(char* path, char* file_name) {
+
+    char retr_cmd[5+strlen(path)+3];
+    sprintf(retr_cmd, "retr /%s\r\n", path);
+    printf("%s\n%ld", retr_cmd, strlen(retr_cmd));
+
+    write(socket1, retr_cmd, strlen(retr_cmd));
+
+    char reply[REPLY_LENGTH];
+
+    int reply_code = read_from_server(reply);
+
+    printf("%s", reply);
+
+    if (reply_code != FILE_OK) {
+        printf("File not ok\n Reply Code: %d\n", reply_code);
+        exit(-1);
+    }
+
+    FILE* fd = fopen(file_name, "wb");
+    if (fd == NULL) {
+        printf("Error opening destination file\n");
+        exit(-1);
+    }
+
+    int bytes_read = 1;
+    char* buf[DATA_BUF_LEN];
+
+    while (bytes_read) {
+        bytes_read = read(socket2, buf, DATA_BUF_LEN);
+
+        if (fwrite(buf, bytes_read, 1, fd) < 1) {
+            printf("Error writing to destination file\n");
+            exit(-1);
+        }
+    }
+
+    fclose(fd);
+
+    reply_code = read_from_server(reply);
+
+    printf("%s", reply);
+
+    if (reply_code != DATA_CLOSED) {
+        printf("Error closing data connection\n Reply Code: %d\n", reply_code);
+        exit(-1);
+    }
+
+    return 0;
+}
+
+int close_connections() {
+
+    char quit_cmd[6] = "quit\r\n";
+
+    write(socket1, quit_cmd, 6);
+
+    char reply[REPLY_LENGTH];
+
+    int reply_code = read_from_server(reply);
+
+    if (reply_code != CONTROL_CLOSED) {
+        printf("Error closing control connection\n Reply Code: %d\n", reply_code);
+        exit(-1);
+    }
+
+    if (close(socket1)) {
+        printf("Error closing socket1\n");
+        exit(-1);
+    }
+    if (close(socket2)) {
+        printf("Error closing socket2\n");
+        exit(-1);
+    }
+
+    return 0;
+
 }
 
 
