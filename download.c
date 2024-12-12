@@ -19,7 +19,8 @@ int main(int argc, char *argv[]){
     printf("Username: %s\n",url_info.username);
     printf("Password: %s\n",url_info.password);
     printf("Host: %s\n",url_info.host);
-    printf("Filepath: %s\n",url_info.url_path);
+    printf("Path: %s\n",url_info.url_path);
+    printf("File name: %s\n",url_info.filename);
     printf("IP: %s\n",url_info.ip);
 
 
@@ -109,6 +110,13 @@ int parse_url(char* url_str, url_info* url_info){
 
         url_info->ip = inet_ntoa(*((struct in_addr *) ip_address->h_addr));
 
+        char *filename = strrchr(url_info->url_path, '/');
+
+        if(filename){
+            filename++;
+            url_info->filename = strdup(filename);
+        }
+
 
     }
 
@@ -139,6 +147,13 @@ int parse_url(char* url_str, url_info* url_info){
         struct hostent* ip_address = get_ip(url_info->host);
 
         url_info->ip = inet_ntoa(*((struct in_addr *) ip_address->h_addr));
+
+        char *filename = strrchr(url_info->url_path, '/');
+
+        if(filename){
+            filename++;
+            url_info->filename = strdup(filename);
+        }
 
     }
 
