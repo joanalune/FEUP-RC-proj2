@@ -1,6 +1,7 @@
 #include "download.h"
 
 int socket1;
+int socket2;
 
 int main(int argc, char *argv[]){
     if (argc != 2){
@@ -50,6 +51,10 @@ int main(int argc, char *argv[]){
     if(passive_mode(ip,&port) != 0){
         printf("Error starting passive mode\n");
     }
+
+    socket2 = socket_connection(ip, port);
+
+    
 
 
     return 0;
