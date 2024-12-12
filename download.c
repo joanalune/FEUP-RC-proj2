@@ -1,5 +1,7 @@
 #include "download.h"
 
+int socket1;
+
 int main(int argc, char *argv[]){
     if (argc != 2){
         printf("Usage: ./download ftp://[<user>:<password>@]<host>/<url>\n");
@@ -22,14 +24,19 @@ int main(int argc, char *argv[]){
     printf("IP: %s\n",url_info.ip);
 
 
-    //char reply[REPLY_LENGTH];
-    int socket1 = socket_connection(url_info.ip, SERVER_PORT);
-    if(socket1 != 0){
+    char reply[REPLY_LENGTH];
+    socket1 = socket_connection(url_info.ip, SERVER_PORT);
+    if(socket1 == -1){
         printf("Failed connection to socket\n");
         exit(-1);
     }
 
+    int code = read_from_server(reply);
 
+    printf("Code: %d\n%s", code, reply);
+
+
+    return 0;
 }
 
 struct hostent* get_ip(char* host) {
@@ -187,7 +194,77 @@ int socket_connection(char *ip, int port){
 
     printf("Connection successful!\n");
 
-    return 0;
+    return sockfd;
+
+}
+
+int read_from_server(char* buf) {
+
+
+    char* code_str;
+    int code = 0;
+    int state = START;
+    char line_header[4];
+    char curr_byte;
+
+    
+    int buf_i = 0;
+    while (state != END) {
+        switch (state)
+        {
+        case START:
+            read(socket1, line_header, 4);
+            code_str = strndup(line_header, 3);
+            state = READING;
+
+            if (line_header[3] == ' ') {
+                state = END_LINE;
+            }
+            break;
+        
+        case READING:
+            read(socket1, &curr_byte, 1);
+
+            buf[buf_i] = curr_byte;
+            buf_i++;
+
+            if (curr_byte == '\n') {
+                state = NEW_LINE;
+            }
+            break;
+
+        case NEW_LINE:
+            read(socket1, line_header, 4);
+
+            if (line_header[3] == ' ') {
+                state = END_LINE;
+                break;
+            }
+            state = READING;
+            break;
+
+        case END_LINE:
+            read(socket1, &curr_byte, 1);
+
+
+            buf[buf_i] = curr_byte;
+            
+            buf_i++;
+            
+
+            if (buf[buf_i-1] == '\n') {
+                state = END;
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+    
+
+    sscanf(code_str, "%d", &code);
+    return code;
 
 }
 
