@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     printf("Username: %s\n",url_info.username);
     printf("Password: %s\n",url_info.password);
     printf("Host: %s\n",url_info.host);
-    printf("Filepath: %s\n",url_info.url_path);
+    printf("Path: %s\n",url_info.url_path);
     printf("File name: %s\n",url_info.filename);
     printf("IP: %s\n",url_info.ip);
 
