@@ -48,6 +48,7 @@ int parse_url(char* url_str, url_info* url_info){
     char* password;
     char* host;
     char* path;
+    char* original_url = strdup(url_str);
 
 
 
@@ -103,11 +104,15 @@ int parse_url(char* url_str, url_info* url_info){
 
         url_info->ip = inet_ntoa(*((struct in_addr *) ip_address->h_addr));
 
-        char *filename = strrchr(url_info->url_path, '/');
+        char *filename = strrchr(original_url, '/');
 
-        if(filename){
+        if(filename != NULL){
             filename++;
             url_info->filename = strdup(filename);
+        }
+        else{
+            url_info->filename = strdup(url_info->url_path);
+
         }
 
 
@@ -141,11 +146,15 @@ int parse_url(char* url_str, url_info* url_info){
 
         url_info->ip = inet_ntoa(*((struct in_addr *) ip_address->h_addr));
 
-        char *filename = strrchr(url_info->url_path, '/');
+        char *filename = strrchr(original_url, '/');
 
-        if(filename){
+        if(filename != NULL){
             filename++;
             url_info->filename = strdup(filename);
+        }
+        else{
+            url_info->filename = strdup(url_info->url_path);
+
         }
 
     }
