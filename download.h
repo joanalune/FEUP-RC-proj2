@@ -12,6 +12,12 @@
 
 #define REPLY_LENGTH 500
 
+#define START 0
+#define READING 1
+#define NEW_LINE 2
+#define END_LINE 3
+#define END 4
+
 #define AUTH_READY "220" //220 server ready for user authentication
 #define USERNAME_OK "331" //331 User name okay, need password.
 #define LOGIN_OK "230" //230 User logged in, proceed.
@@ -35,6 +41,6 @@ int login(char* username, char* password);
 
 void write_to_server(char* cmd);
 
-void read_from_server(char* buf);
+int read_from_server(char* buf);
 
 int socket_connection(char *ip, int port);
