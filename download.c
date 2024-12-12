@@ -44,6 +44,13 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
 
+    int port;
+    char ip[REPLY_LENGTH];
+
+    if(passive_mode(ip,&port) != 0){
+        printf("Error starting passive mode\n");
+    }
+
 
     return 0;
 }
@@ -300,11 +307,41 @@ int authentication(char* username, char* password){
 
     write(socket1,pass_cmd,strlen(pass_cmd));
 
-
     code = read_from_server(reply);
 
     return code;
 
+}
+
+int passive_mode(char *ip, int *port){
+
+    char pasv_cmd[7];
+    sprintf(pasv_cmd,"pasv\r\n");
+
+    char reply[REPLY_LENGTH];
+
+    write(socket1,pasv_cmd, 7);
+
+    int code = read_from_server(reply);
+
+    if(code != PASV_ON){
+        exit(-1);
+    }
+
+    printf("Code:%d\n%s\n",code,reply);
+
+    int ip1, ip2, ip3, ip4, p1, p2;
+
+    if (sscanf(reply, "Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &ip1, &ip2, &ip3, &ip4, &p1, &p2) == 6) {
+        sprintf(ip, "%d.%d.%d.%d", ip1, ip2, ip3, ip4);
+
+        *port = p1 * 256 + p2;
+    } else {
+        printf("Failed to parse PASV response: %s\n", reply);
+        exit(-1);
+    }
+
+    return 0;
 }
 
 
