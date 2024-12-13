@@ -207,7 +207,7 @@ int socket_connection(char *ip, int port){
     bzero((char *) &server_addr, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr(ip);    //32 bit Internet address network byte ordered
-    server_addr.sin_port = htons(SERVER_PORT);        //server TCP port must be network byte ordered
+    server_addr.sin_port = htons(port);        //server TCP port must be network byte ordered
 
     // open a TCP socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -328,20 +328,16 @@ int authentication(char* username, char* password){
 
 int passive_mode(char *ip, int *port){
 
-    char pasv_cmd[7];
-    sprintf(pasv_cmd,"pasv\r\n");
 
     char reply[REPLY_LENGTH];
 
-    write(socket1,pasv_cmd, 7);
+    write(socket1,"pasv\r\n", 6);
 
     int code = read_from_server(reply);
 
     if(code != PASV_ON){
         exit(-1);
     }
-
-    printf("Code:%d\n%s\n",code,reply);
 
     int ip1, ip2, ip3, ip4, p1, p2;
 
@@ -361,7 +357,6 @@ int get_file(char* path, char* file_name) {
 
     char retr_cmd[5+strlen(path)+3];
     sprintf(retr_cmd, "retr %s\r\n", path);
-    printf("%s\n%ld\n", retr_cmd, strlen(retr_cmd));
 
     write(socket1, retr_cmd, strlen(retr_cmd));
 
@@ -389,7 +384,7 @@ int get_file(char* path, char* file_name) {
     while (bytes_read) {
         bytes_read = read(socket2, buf, DATA_BUF_LEN);
 
-        if (fwrite(buf, bytes_read, 1, fd) < 1) {
+        if (fwrite(buf, bytes_read, 1, fd) < 0) {
             printf("Error writing to destination file\n");
             exit(-1);
         }
